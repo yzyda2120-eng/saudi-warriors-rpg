@@ -11,7 +11,7 @@ import java.util.Locale;
 
 /**
  * النشاط الرئيسي المطور بالكامل للعبة "Saudi War RPG"
- * يربط كافة الأنظمة (التنقل، القتال، التصنيع، الحماية، الأونلاين، والواجهة).
+ * يربط كافة الأنظمة الحقيقية (التنقل، القتال، التصنيع، الحماية، الأونلاين، والواجهة).
  */
 public class MainActivity extends Activity implements TextToSpeech.OnInitListener {
 
@@ -22,6 +22,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
     private AINavigationSystem navigationSystem;
     private CombatSystem combatSystem;
     private CraftingSystem craftingSystem;
+    private SpatialAudioEngine audioEngine;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,10 +33,11 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         tts = new TextToSpeech(this, this);
         vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
 
-        // 2. تهيئة الأنظمة المتطورة
+        // 2. تهيئة الأنظمة الحقيقية
         navigationSystem = new AINavigationSystem(tts);
         combatSystem = new CombatSystem(tts, vibrator);
         craftingSystem = new CraftingSystem(tts);
+        audioEngine = new SpatialAudioEngine(this);
 
         // 3. تهيئة نظام الإيماءات السعودية المتقدم (Advanced Saudi Gestures)
         gestureDetector = new GestureDetector(this, new SaudiGestureListener());
@@ -57,6 +59,9 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
             // محاكاة توجيه اللاعب نحو الهدف الأول
             navigationSystem.updatePlayerPosition(0, 0, 0);
             navigationSystem.guideToTarget(100, 50, 0);
+            
+            // محاكاة صوت دبابة قادمة من اليمين (Spatial Audio)
+            audioEngine.playSpatialSound("دبابة", 90, 0.5f);
         }
     }
 
@@ -69,7 +74,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         @Override
         public boolean onDoubleTap(MotionEvent e) {
             // إيماءة "صيحة الحرب" - إطلاق نار
-            combatSystem.fireWeapon("رشاش الصقر الحديث", "آلي");
+            combatSystem.fireWeapon();
             return true;
         }
 
@@ -86,6 +91,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
             // إيماءة "سحب سريع" - جمع موارد أو صناعة
             if (velocityX > 0) {
                 craftingSystem.collectResource("حديد", 10);
+                craftingSystem.collectResource("وقود", 5);
             } else {
                 craftingSystem.craftVehicle("دبابة الفهد");
             }
